@@ -45,11 +45,11 @@ export function FileUpload({ onFileUpload }: FileUploadProps) {
         return;
       }
 
-      if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
-        toast.error("File size must be less than 10MB");
-        return;
-      }
+      // if (file.size > 10 * 1024 * 1024) {
+      //   // 10MB limit
+      //   toast.error("File size must be less than 10MB");
+      //   return;
+      // }
 
       setIsProcessing(true);
 
