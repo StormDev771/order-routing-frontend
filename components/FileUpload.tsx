@@ -165,7 +165,6 @@ export function FileUpload({ onFileUpload }: FileUploadProps) {
 
           <div className="text-xs text-gray-500 space-y-1">
             <p>Supported format: CSV files only</p>
-            <p>Maximum file size: 10MB</p>
           </div>
         </div>
 
