@@ -178,6 +178,11 @@ export default function Home() {
                       {/* Metrics button always shown after Classify, enabled if results exist and evaluation is available */}
                       <Button
                         onClick={handleShowMetrics}
+                        disabled={
+                          results.length === 0 ||
+                          evaluation === null ||
+                          isEvaluating
+                        }
                         className="bg-gradient-to-r from-green-600 to-blue-400 hover:from-green-700 hover:to-blue-500"
                       >
                         <BarChart3 className="h-4 w-4 mr-2" />
