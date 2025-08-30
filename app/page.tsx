@@ -11,24 +11,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Upload, Brain, Download, RotateCcw } from "lucide-react";
+import { Upload, Brain, Download, RotateCcw, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
-import { classifyFile } from "../lib/api";
+import { classifyFile, evoluateOrder } from "../lib/api";
 
 export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<any[]>([]);
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<any[]>([]);
   const [isClassifying, setIsClassifying] = useState(false);
+
+  // Evaluation state
+  const [evaluation, setEvaluation] = useState<any | null>(null);
+  const [showMetrics, setShowMetrics] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
 
   const handleFileUpload = (file: File, data: any[]) => {
     setUploadedFile(file);
     setCsvData(data);
     setResults([]);
+    setEvaluation(null);
+    setShowMetrics(false);
     toast.success(`File "${file.name}" uploaded successfully!`);
   };
-
-  // ############ update 1
 
   const handleClassify = async () => {
     if (!uploadedFile || csvData.length === 0) {
@@ -37,6 +42,8 @@ export default function Home() {
     }
 
     setIsClassifying(true);
+    setEvaluation(null);
+    setShowMetrics(false);
     try {
       // Call your custom backend API
       const response = await classifyFile(uploadedFile);
@@ -46,6 +53,20 @@ export default function Home() {
       }
 
       setResults(response.results);
+
+      // Call evoluateOrder with classified results
+      setIsEvaluating(true);
+      try {
+        const evalRes = await evoluateOrder(response.results);
+        setEvaluation(evalRes.metrics); // fallback if no .metrics
+        toast.success("Evaluation complete!");
+      } catch (err) {
+        setEvaluation(null);
+        toast.error("Evaluation failed. Please check your backend API.");
+      } finally {
+        setIsEvaluating(false);
+      }
+
       toast.success(`Successfully classified ${response.results.length} rows`);
     } catch (error) {
       console.error("Classification error:", error);
@@ -92,7 +113,16 @@ export default function Home() {
     setUploadedFile(null);
     setCsvData([]);
     setResults([]);
+    setEvaluation(null);
+    setShowMetrics(false);
     toast.info("All data cleared");
+  };
+
+  // Metrics button handler
+  const handleShowMetrics = () => {
+    if (!results) toast.error("No results to evaluate");
+    if (evaluation === null) toast.error("No evaluation available");
+    setShowMetrics((prev) => !prev);
   };
 
   return (
@@ -145,6 +175,14 @@ export default function Home() {
                         <Brain className="h-4 w-4 mr-2" />
                         {isClassifying ? "Classifying..." : "Classify"}
                       </Button>
+                      {/* Metrics button always shown after Classify, enabled if results exist and evaluation is available */}
+                      <Button
+                        onClick={handleShowMetrics}
+                        className="bg-gradient-to-r from-green-600 to-blue-400 hover:from-green-700 hover:to-blue-500"
+                      >
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        {showMetrics ? "Hide Metrics" : "Metrics"}
+                      </Button>
                       <Button
                         variant="outline"
                         onClick={handleClear}
@@ -155,6 +193,35 @@ export default function Home() {
                       </Button>
                     </div>
                   </div>
+                  {/* Evaluation Result */}
+                  {showMetrics && evaluation && (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200 shadow flex flex-col md:flex-row gap-6 items-center justify-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-2xl font-bold text-green-700">
+                          Accuracy
+                        </span>
+                        <span className="text-xl text-green-900">
+                          {evaluation.accuracy}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="text-2xl font-bold text-blue-700">
+                          F1-macro
+                        </span>
+                        <span className="text-xl text-blue-900">
+                          {evaluation.f1_macro}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="text-2xl font-bold text-purple-700">
+                          Runtime
+                        </span>
+                        <span className="text-xl text-purple-900">
+                          {evaluation.runtime_sec}s
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

@@ -15,3 +15,10 @@ export async function classifyOrder(order: any) {
   const res = await axios.post(`${API_BASE}/classify/order`, order);
   return res.data;
 }
+
+// Update evoluateOrder to accept array of orders and POST to /evaluate/json
+export async function evoluateOrder(orders: any[]) {
+  const res = await axios.post(`${API_BASE}/evaluate/json`, orders);
+  // returns { metrics, sample_predictions }
+  return res.data;
+}

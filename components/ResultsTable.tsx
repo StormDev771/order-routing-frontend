@@ -32,8 +32,6 @@ export function ResultsTable({ results }: { results: any[] }) {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  console.log("Results:", results);
-
   // Dynamically get all unique columns from all rows (including classification/confidence/timestamp)
   const allColumns =
     results.length > 0

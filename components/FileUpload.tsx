@@ -40,8 +40,6 @@ export function FileUpload({ onFileUpload }: FileUploadProps) {
 
   const handleFile = useCallback(
     async (file: File) => {
-      console.log("response____________> start ");
-
       if (!file.name.toLowerCase().endsWith(".csv")) {
         toast.error("Please upload a CSV file");
         return;
